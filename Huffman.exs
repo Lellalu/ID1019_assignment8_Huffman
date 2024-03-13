@@ -74,28 +74,22 @@ defmodule Huffman do
   end
 
   def encode(text, table) do
-    encode(text, table, [])
-  end
-  def encode([], table, acc) do
-    acc
-  end
-  def encode([c | rest], table, acc) do
-    encode(rest, table, acc ++ Map.get(table, c))
+    List.flatten(Enum.map(text, fn x -> Map.get(table, x) end))
   end
 
   def decode(seq, table) do
     decode(seq, [], table, [])
   end
   def decode([], [], table, acc) do
-    acc
+    Enum.reverse(acc)
   end
   def decode([], partialSeq, table, acc) do
-    acc ++ [Map.get(table, partialSeq)]
+    decode([], [], table, [Map.get(table, partialSeq) | acc])
   end
   def decode([bit | rest], partialSeq, table, acc) do
     cond do
       Map.has_key?(table, partialSeq) ->
-        decode([bit | rest], [], table, acc++[Map.get(table, partialSeq)])
+        decode([bit | rest], [], table, [Map.get(table, partialSeq) | acc])
       true ->
         decode(rest, partialSeq++[bit], table, acc)
     end
@@ -108,7 +102,7 @@ defmodule Huffman do
   end
 
   def bench(n) do
-    {_, chars, chars_len, _} = read("text.txt")
+    {_, chars, chars_len, _} = read("kallocain.txt")
     tree = tree(chars)
     encode = encode_table(tree)
     decode = decode_table(tree)
